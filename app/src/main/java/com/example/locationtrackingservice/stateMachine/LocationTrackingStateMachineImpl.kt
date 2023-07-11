@@ -3,21 +3,25 @@ package com.example.locationtrackingservice.stateMachine
 import android.location.Location
 import android.util.Log
 import androidx.lifecycle.LiveData
-import com.example.locationtrackingservice.LocationCallback
-import com.example.locationtrackingservice.LocationManager
-import com.example.locationtrackingservice.MapManager
+import com.example.locationtrackingservice.managers.location.LocationCallback
+import com.example.locationtrackingservice.managers.location.LocationManager
+import com.example.locationtrackingservice.managers.map.MapManager
 import com.google.android.gms.maps.MapView
 
 
 class LocationTrackingStateMachineImpl(
     private val mapManager: MapManager,
     private val locationManager: LocationManager,
-    private val mapView: LiveData<MapView?>
+    mapViewLiveData: LiveData<MapView?>
 ) :
     LocationTrackingStateMachine, LocationCallback {
+    private var mapView: MapView? = null
     private var currentState: States = States.IDLE
 
     init {
+        mapViewLiveData.observeForever { mapView ->
+            this.mapView = mapView
+        }
         locationManager.setLocationCallback(this)
     }
 
@@ -27,7 +31,9 @@ class LocationTrackingStateMachineImpl(
     }
 
     override fun onLastLocationReceived(location: Location) {
-        mapManager.displayLocation(location, mapView.value)
+        mapView.let { mapView ->
+            mapManager.displayLocation(location, mapView)
+        }
     }
 
     private fun handleStateTransition(newState: States) {

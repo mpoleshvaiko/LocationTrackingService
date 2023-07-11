@@ -54,4 +54,7 @@ dependencies {
 
     //Google Maps SDK
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
+
+    //Dependency Injection
+    implementation "io.insert-koin:koin-android:3.4.1"
 }

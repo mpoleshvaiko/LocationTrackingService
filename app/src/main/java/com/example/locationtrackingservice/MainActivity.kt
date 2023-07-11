@@ -6,16 +6,17 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.ViewModelProvider
 import com.example.locationtrackingservice.databinding.ActivityMainBinding
+import com.example.locationtrackingservice.managers.permission.PermissionManagerImpl
 import com.google.android.gms.maps.MapView
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
     private lateinit var binding: ActivityMainBinding
-    private lateinit var viewModel: MainActivityViewModel
-    private lateinit var permissionManager: PermissionManager
+    private lateinit var permissionManager: PermissionManagerImpl
+    private val viewModel: MainActivityViewModel by viewModel()
 
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -23,12 +24,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
         binding.vm = viewModel
         mapView = binding.mapView
         mapView.onCreate(savedInstanceState)
         viewModel.initializeMapView(mapView)
-        permissionManager = PermissionManager(this)
+        permissionManager = PermissionManagerImpl(this)
         permissionManager.requestPermissions { granted ->
             if (granted) viewModel.readyToTrack()
             else Log.d("PERMISSIONS", "NOT GRANTED")

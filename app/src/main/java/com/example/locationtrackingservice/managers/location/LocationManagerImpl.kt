@@ -1,4 +1,4 @@
-package com.example.locationtrackingservice
+package com.example.locationtrackingservice.managers.location
 
 import android.Manifest
 import android.content.Context
@@ -10,17 +10,17 @@ import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 
-class LocationManager(private val context: Context) {
-    private var fusedLocationClient: FusedLocationProviderClient =
+class LocationManagerImpl(private val context: Context) : LocationManager {
+    private val _fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
 
-    private var locationCallback: LocationCallback? = null
+    private var _locationCallback: LocationCallback? = null
 
-    fun setLocationCallback(callback: LocationCallback) {
-        locationCallback = callback
+    override fun setLocationCallback(callback: LocationCallback) {
+        _locationCallback = callback
     }
 
-    fun getLastKnownLocation(): LiveData<Location?> {
+    override fun getLastKnownLocation(): LiveData<Location?> {
         val locationLiveData = MutableLiveData<Location?>()
         if (ActivityCompat.checkSelfPermission(
                 context,
@@ -30,9 +30,9 @@ class LocationManager(private val context: Context) {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            _fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 if (location != null) {
-                    locationCallback?.onLastLocationReceived(location)
+                    _locationCallback?.onLastLocationReceived(location)
 
                     locationLiveData.value = location
                 }
