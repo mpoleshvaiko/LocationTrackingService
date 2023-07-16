@@ -10,12 +10,8 @@ class MainActivityViewModel(
     application: Application,
     private val locationTrackingStateMachine: LocationTrackingStateMachine
 ) : AndroidViewModel(application) {
-    private val _mapView: MutableLiveData<MapView> = MutableLiveData()
 
-    fun initializeMapView(mapView: MapView) {
-        _mapView.value = mapView
-    }
-
+    fun initializeMapView(mapView: MapView) = locationTrackingStateMachine.setMapView(mapView)
     fun readyToTrack() = locationTrackingStateMachine.transitionTo(States.READY)
     fun startTracking() = locationTrackingStateMachine.transitionTo(States.RUNNING)
     fun pauseTracking() = locationTrackingStateMachine.transitionTo(States.PAUSE)

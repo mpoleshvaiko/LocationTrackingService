@@ -13,11 +13,10 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var mapView: MapView
     private lateinit var binding: ActivityMainBinding
     private lateinit var permissionManager: PermissionManagerImpl
     private val viewModel: MainActivityViewModel by viewModel()
-
+    private lateinit var mapView: MapView
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
