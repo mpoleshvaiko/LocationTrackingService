@@ -12,5 +12,5 @@ import org.koin.dsl.module
 val managers = module {
     single<LocationManager> { LocationManagerImpl(androidContext()) }
     single<MapManager> { MapManagerImpl() }
-    single<PermissionManager> { PermissionManagerImpl(get()) }
+    single<PermissionManager> { PermissionManagerImpl(androidContext()) }
 }

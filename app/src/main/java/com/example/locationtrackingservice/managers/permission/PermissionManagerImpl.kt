@@ -1,12 +1,13 @@
 package com.example.locationtrackingservice.managers.permission
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
 class PermissionManagerImpl(
-    private val activity: AppCompatActivity
+    private val context: Context
 ) : PermissionManager {
 
     companion object {
@@ -16,14 +17,14 @@ class PermissionManagerImpl(
     private var permissionCallback: ((Boolean) -> Unit)? = null
 
     override fun permissionGranted() = ContextCompat.checkSelfPermission(
-        activity.applicationContext,
+        context.applicationContext,
         Manifest.permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-        activity.applicationContext,
+        context.applicationContext,
         Manifest.permission.ACCESS_COARSE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
 
-    override fun requestPermissions(callback: (Boolean) -> Unit) {
+    override fun requestPermissions(activity: AppCompatActivity, callback: (Boolean) -> Unit) {
         permissionCallback = callback
         if (permissionGranted()) {
             permissionCallback!!.invoke(true)

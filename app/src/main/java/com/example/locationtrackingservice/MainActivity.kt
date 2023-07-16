@@ -1,24 +1,18 @@
 package com.example.locationtrackingservice
 
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
-import android.util.Log
-import androidx.annotation.RequiresApi
 import com.example.locationtrackingservice.databinding.ActivityMainBinding
-import com.example.locationtrackingservice.managers.permission.PermissionManagerImpl
 import com.google.android.gms.maps.MapView
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var permissionManager: PermissionManagerImpl
     private val viewModel: MainActivityViewModel by viewModel()
     private lateinit var mapView: MapView
 
-    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -27,11 +21,7 @@ class MainActivity : AppCompatActivity() {
         mapView = binding.mapView
         mapView.onCreate(savedInstanceState)
         viewModel.initializeMapView(mapView)
-        permissionManager = PermissionManagerImpl(this)
-        permissionManager.requestPermissions { granted ->
-            if (granted) viewModel.readyToTrack()
-            else Log.d("PERMISSIONS", "NOT GRANTED")
-        }
+        viewModel.readyToTrack(this)
     }
 
     override fun onStart() {
@@ -75,6 +65,6 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        permissionManager.onRequestPermissionResult(requestCode, permissions, grantResults)
+        viewModel.handlePermissionResult(requestCode, permissions, grantResults)
     }
 }
