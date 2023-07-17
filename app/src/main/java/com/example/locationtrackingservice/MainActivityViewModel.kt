@@ -25,7 +25,7 @@ class MainActivityViewModel(
     fun readyToTrack(activity: AppCompatActivity) {
         permissionManager.requestPermissions(activity) { granted ->
             if (granted) locationTrackingStateMachine.transitionTo(States.READY)
-            else Log.d("PERMISSIONS", "NOT GRANTED")
+            else Log.d(LOG_TAG_PERMISSIONS, "NOT GRANTED")
         }
     }
 

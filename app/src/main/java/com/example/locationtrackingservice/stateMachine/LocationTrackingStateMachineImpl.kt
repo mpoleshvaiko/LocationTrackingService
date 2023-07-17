@@ -2,6 +2,8 @@ package com.example.locationtrackingservice.stateMachine
 
 import android.location.Location
 import android.util.Log
+import com.example.locationtrackingservice.LOG_TAG_MAP_VIEW
+import com.example.locationtrackingservice.LOG_TAG_STATE
 import com.example.locationtrackingservice.managers.location.LocationCallback
 import com.example.locationtrackingservice.managers.location.LocationManager
 import com.example.locationtrackingservice.managers.map.MapManager
@@ -28,7 +30,7 @@ class LocationTrackingStateMachineImpl(
 
     override fun onLastLocationReceived(location: Location) {
         if (currentMapView != null) mapManager.displayLocation(location, currentMapView)
-        else Log.e("MapView", "MapView not intialized")
+        else Log.e(LOG_TAG_MAP_VIEW, "MapView not initialized")
     }
 
     override fun setMapView(mapView: MapView) {
@@ -38,26 +40,24 @@ class LocationTrackingStateMachineImpl(
     private fun handleStateTransition(newState: States) {
         when (newState) {
             States.IDLE -> {
-                Log.d(LOG_TAG, "IDLE")
+                Log.d(LOG_TAG_STATE, "IDLE")
             }
             States.READY -> {
                 locationManager.getLastKnownLocation().value
-                Log.d(LOG_TAG, "READY")
+                Log.d(LOG_TAG_STATE, "READY")
             }
             States.RUNNING -> {
-                Log.d(LOG_TAG, "RUNNING")
+                Log.d(LOG_TAG_STATE, "RUNNING")
             }
             States.PAUSE -> {
-                Log.d(LOG_TAG, "PAUSE")
+                Log.d(LOG_TAG_STATE, "PAUSE")
             }
             States.DONE -> {
-                Log.d(LOG_TAG, "DONE")
+                Log.d(LOG_TAG_STATE, "DONE")
             }
             States.ERROR -> {
-                Log.e(LOG_TAG, "ERROR")
+                Log.e(LOG_TAG_STATE, "ERROR")
             }
         }
     }
 }
-
-const val LOG_TAG = "STATE"
