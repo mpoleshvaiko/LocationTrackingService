@@ -2,6 +2,8 @@ package com.example.locationtrackingservice.stateMachine
 
 import android.location.Location
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.locationtrackingservice.LOG_TAG_MAP_VIEW
 import com.example.locationtrackingservice.LOG_TAG_STATE
 import com.example.locationtrackingservice.managers.location.LocationCallback
@@ -15,7 +17,8 @@ class LocationTrackingStateMachineImpl(
     private val locationManager: LocationManager
 ) :
     LocationTrackingStateMachine, LocationCallback {
-    private var currentState: States = States.IDLE
+    private val _currentState = MutableLiveData<States>(States.IDLE)
+    val currentState: LiveData<States> get() = _currentState
     private var currentMapView: MapView? = null
 
     init {
@@ -23,7 +26,6 @@ class LocationTrackingStateMachineImpl(
     }
 
     override fun transitionTo(newState: States) {
-        currentState = newState
         handleStateTransition(newState)
     }
 
@@ -59,5 +61,6 @@ class LocationTrackingStateMachineImpl(
                 Log.e(LOG_TAG_STATE, "ERROR")
             }
         }
+        _currentState.value = newState
     }
 }
