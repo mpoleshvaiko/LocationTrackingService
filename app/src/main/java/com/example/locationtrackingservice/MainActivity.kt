@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
 import com.example.locationtrackingservice.databinding.ActivityMainBinding
-import com.example.locationtrackingservice.managers.location.LocationManager
 import com.example.locationtrackingservice.managers.map.MapManager
 import com.google.android.gms.maps.MapView
 import org.koin.android.ext.android.inject
@@ -16,7 +15,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainActivityViewModel by viewModel()
     private lateinit var mapView: MapView
-    private val locationManager: LocationManager by inject()
     private val mapManager: MapManager by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,17 +28,15 @@ class MainActivity : AppCompatActivity() {
             if (granted) getCurrentLocationAndDisplayOnMap()
             else Log.e(LOG_TAG_PERMISSIONS, "PERMISSIONS WERE NOT GRANTED")
         }
-
     }
 
     private fun getCurrentLocationAndDisplayOnMap() =
-        locationManager.getCurrentLocation().observe(this) { location ->
+        viewModel.startLocationUpdates().observe(this) { location ->
             if (location != null) {
                 mapManager.displayLocation(location, mapView)
             } else {
                 Log.e(LOG_TAG_LOCATION, "FAILED TO OBTAIN CURRENT LOCATION")
             }
-
         }
 
     override fun onStart() {
@@ -61,6 +57,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         mapView.onStop()
+        viewModel.stopLocationUpdates()
     }
 
     override fun onDestroy() {

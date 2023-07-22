@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.locationtrackingservice.LOG_TAG_LOCATION
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -18,8 +19,11 @@ class LocationManagerImpl(private val context: Context) : LocationManager {
     private val _fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
 
+    private val locationLiveData = MutableLiveData<Location?>()
+
+    private var locationCallback: LocationCallback? = null
+
     override fun getCurrentLocation(): LiveData<Location?> {
-        val locationLiveData = MutableLiveData<Location?>()
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -39,16 +43,15 @@ class LocationManagerImpl(private val context: Context) : LocationManager {
                 }
             ).addOnSuccessListener {
                 locationLiveData.value = it
-                Log.d("LOCATION", "GET LOCATION $it")
 
             }.addOnFailureListener {
-                Log.d("LOCATION", "FAILED TO GET CURRENT LOCATION")
+                Log.d(LOG_TAG_LOCATION, "FAILED TO GET CURRENT LOCATION")
             }
         }
         return locationLiveData
     }
 
-    override fun requestLocationUpdate() {
+    override fun requestLocationUpdate(): LiveData<Location?> {
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -58,23 +61,27 @@ class LocationManagerImpl(private val context: Context) : LocationManager {
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             val locationRequest =
-                LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 0)
+                LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
                     .build()
-            val locationCallback = object : LocationCallback() {
+            locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
-                    //locationCallback.onLocationResult(locationResult)
-                    //locationResult ?: return
-                    //for (currentLocation in locationResult.locations) {
-                    //    locationLiveData.value = currentLocation
-                    // }
+                    locationResult ?: return
+                    for (currentLocation in locationResult.locations) {
+                        locationLiveData.value = currentLocation
+                    }
                 }
             }
             _fusedLocationClient.requestLocationUpdates(
                 locationRequest,
-                locationCallback,
+                locationCallback as LocationCallback,
                 Looper.getMainLooper()
             )
         }
+        return locationLiveData
+    }
+
+    override fun removeLocationUpdate() {
+        locationCallback?.let { _fusedLocationClient.removeLocationUpdates(it) }
     }
 
 }

@@ -5,5 +5,6 @@ import androidx.lifecycle.LiveData
 
 interface LocationManager {
     fun getCurrentLocation(): LiveData<Location?>
-    fun requestLocationUpdate()
+    fun requestLocationUpdate(): LiveData<Location?>
+    fun removeLocationUpdate()
 }
