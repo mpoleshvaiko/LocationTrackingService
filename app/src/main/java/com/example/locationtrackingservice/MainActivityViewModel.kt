@@ -15,6 +15,8 @@ class MainActivityViewModel(
     private val locationManager: LocationManager
 ) : AndroidViewModel(application) {
 
+    private var readyToTrackCalled = false
+
     fun handlePermissionResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -27,7 +29,13 @@ class MainActivityViewModel(
     fun startLocationUpdates() = locationManager.requestLocationUpdate()
     fun stopLocationUpdates() = locationManager.requestLocationUpdate()
 
-    fun readyToTrack() = locationTrackingStateMachine.transitionTo(States.READY)
+    fun readyToTrack() {
+        if (!readyToTrackCalled) {
+            locationTrackingStateMachine.transitionTo(States.READY)
+            readyToTrackCalled = true
+        }
+    }
+
     fun startTracking() = locationTrackingStateMachine.transitionTo(States.RUNNING)
     fun pauseTracking() = locationTrackingStateMachine.transitionTo(States.PAUSE)
     fun stopTracking() = locationTrackingStateMachine.transitionTo(States.DONE)

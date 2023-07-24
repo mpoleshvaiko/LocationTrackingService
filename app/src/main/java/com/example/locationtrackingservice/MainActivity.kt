@@ -25,9 +25,12 @@ class MainActivity : AppCompatActivity() {
         mapView = binding.mapView
         mapView.onCreate(savedInstanceState)
         viewModel.requestPermissions(this) { granted ->
-            if (granted) getCurrentLocationAndDisplayOnMap()
-            else Log.e(LOG_TAG_PERMISSIONS, "PERMISSIONS WERE NOT GRANTED")
+            if (granted) {
+                getCurrentLocationAndDisplayOnMap()
+                viewModel.readyToTrack()
+            } else Log.e(LOG_TAG_PERMISSIONS, "PERMISSIONS WERE NOT GRANTED")
         }
+        mapView.getMapAsync { mapManager.onRestoreMapState(it, mapView) }
     }
 
     private fun getCurrentLocationAndDisplayOnMap() =
@@ -68,6 +71,9 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
         mapView.onSaveInstanceState(outState)
+        mapView.getMapAsync {
+            mapManager.onSaveMapState(it, mapView)
+        }
     }
 
     override fun onLowMemory() {
