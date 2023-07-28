@@ -1,10 +1,10 @@
 package com.example.locationtrackingservice.managers.location
 
 import android.location.Location
-import androidx.lifecycle.LiveData
+import kotlinx.coroutines.flow.Flow
 
 interface LocationManager {
-    fun getCurrentLocation(): LiveData<Location?>
-    fun requestLocationUpdate(): LiveData<Location?>
+    fun getCurrentLocation(): Flow<Location?>
+    fun requestLocationUpdate(): Flow<Location?>
     fun removeLocationUpdate()
 }

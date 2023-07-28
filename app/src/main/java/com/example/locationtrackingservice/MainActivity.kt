@@ -4,9 +4,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
+import androidx.lifecycle.lifecycleScope
 import com.example.locationtrackingservice.databinding.ActivityMainBinding
 import com.example.locationtrackingservice.managers.map.MapManager
 import com.google.android.gms.maps.MapView
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -34,13 +37,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getCurrentLocationAndDisplayOnMap() =
-        viewModel.startLocationUpdates().observe(this) { location ->
+        viewModel.startLocationUpdates().onEach { location ->
             if (location != null) {
                 mapManager.displayLocation(location, mapView)
             } else {
                 Log.e(LOG_TAG_LOCATION, "FAILED TO OBTAIN CURRENT LOCATION")
             }
-        }
+        }.launchIn(lifecycleScope)
 
     override fun onStart() {
         super.onStart()

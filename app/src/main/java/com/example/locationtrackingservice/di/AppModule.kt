@@ -6,6 +6,8 @@ val appModule = module {
     includes(
         viewModelModule,
         managers,
-        stateMachine
+        stateMachine,
+        database,
+        repository
     )
 }
