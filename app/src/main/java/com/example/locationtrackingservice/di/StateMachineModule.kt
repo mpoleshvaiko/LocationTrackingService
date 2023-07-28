@@ -5,5 +5,5 @@ import com.example.locationtrackingservice.stateMachine.LocationTrackingStateMac
 import org.koin.dsl.module
 
 val stateMachine = module {
-    single<LocationTrackingStateMachine> { LocationTrackingStateMachineImpl() }
+    single<LocationTrackingStateMachine> { LocationTrackingStateMachineImpl(get(), get()) }
 }

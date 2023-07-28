@@ -7,23 +7,23 @@ import android.location.Location
 import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.locationtrackingservice.LOG_TAG_LOCATION
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class LocationManagerImpl(private val context: Context) : LocationManager {
     private val _fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
 
-    private val locationLiveData = MutableLiveData<Location?>()
+    private val locationFlow = MutableStateFlow<Location?>(null)
 
     private var locationCallback: LocationCallback? = null
 
-    override fun getCurrentLocation(): LiveData<Location?> {
+    override fun getCurrentLocation(): Flow<Location?> {
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -42,16 +42,16 @@ class LocationManagerImpl(private val context: Context) : LocationManager {
 
                 }
             ).addOnSuccessListener {
-                locationLiveData.value = it
+                locationFlow.value = it
 
             }.addOnFailureListener {
                 Log.d(LOG_TAG_LOCATION, "FAILED TO GET CURRENT LOCATION")
             }
         }
-        return locationLiveData
+        return locationFlow
     }
 
-    override fun requestLocationUpdate(): LiveData<Location?> {
+    override fun requestLocationUpdate(): Flow<Location?> {
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -67,7 +67,7 @@ class LocationManagerImpl(private val context: Context) : LocationManager {
                 override fun onLocationResult(locationResult: LocationResult) {
                     locationResult ?: return
                     for (currentLocation in locationResult.locations) {
-                        locationLiveData.value = currentLocation
+                        locationFlow.value = currentLocation
                     }
                 }
             }
@@ -77,7 +77,7 @@ class LocationManagerImpl(private val context: Context) : LocationManager {
                 Looper.getMainLooper()
             )
         }
-        return locationLiveData
+        return locationFlow
     }
 
     override fun removeLocationUpdate() {
