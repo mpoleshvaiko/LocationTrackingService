@@ -7,8 +7,6 @@ import kotlinx.coroutines.flow.Flow
 interface LocationTrackingStateMachine {
     val currentState: LiveData<States>
     fun transitionTo(newState: States)
-    suspend fun saveLocationToDataBase(location: Location)
-
     fun getLocationUpdates(): Flow<Location?>
     fun removeLocationUpdates()
 }

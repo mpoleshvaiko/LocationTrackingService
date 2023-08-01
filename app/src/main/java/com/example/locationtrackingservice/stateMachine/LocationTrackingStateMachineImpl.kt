@@ -29,16 +29,15 @@ class LocationTrackingStateMachineImpl(
         handleStateTransition(newState)
     }
 
-    override suspend fun saveLocationToDataBase(location: Location) {
-        val locationEntity = LocationEntity(location = "$location")
-        locationRepository.insertLocation(locationEntity)
-    }
-
     override fun getLocationUpdates(): Flow<Location?> = locationManager.requestLocationUpdate()
     override fun removeLocationUpdates() {
         locationManager.removeLocationUpdate()
     }
 
+    private suspend fun saveLocationToDatabase(location: Location) {
+        val locationEntity = LocationEntity(location = "$location")
+        locationRepository.insertLocation(locationEntity)
+    }
 
     private fun handleStateTransition(newState: States) {
         when (newState) {
@@ -53,7 +52,7 @@ class LocationTrackingStateMachineImpl(
                 getLocationUpdates()
                     .onEach {
                         if (it != null) {
-                            saveLocationToDataBase(it)
+                            saveLocationToDatabase(it)
                         }
                     }
                     .launchIn(scope)
