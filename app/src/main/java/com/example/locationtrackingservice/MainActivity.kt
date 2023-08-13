@@ -1,9 +1,14 @@
 package com.example.locationtrackingservice
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.provider.Settings
 import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import com.example.locationtrackingservice.databinding.ActivityMainBinding
 import com.example.locationtrackingservice.managers.map.MapManager
@@ -20,6 +25,18 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainActivityViewModel by viewModel()
     private lateinit var mapView: MapView
     private val mapManager: MapManager by inject()
+
+    private val requestAppSettings =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                if (viewModel.isPermissionGranted()) {
+                    getCurrentLocationAndDisplayOnMap()
+                    viewModel.readyToTrack()
+                }else {
+                    showPermissionSnackbar()
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,7 +129,14 @@ class MainActivity : AppCompatActivity() {
             Snackbar.LENGTH_LONG,
             getString(R.string.retry_button_text)
         ) {
-            requestPermissions()
+            navigateToAppSettings()
         }
+    }
+
+    private fun navigateToAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        val uri = Uri.fromParts("package", packageName, null)
+        intent.data = uri
+        requestAppSettings.launch(intent)
     }
 }
