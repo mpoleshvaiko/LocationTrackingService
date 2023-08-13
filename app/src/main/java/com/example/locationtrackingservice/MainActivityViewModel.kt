@@ -24,6 +24,7 @@ class MainActivityViewModel(
 
     fun requestPermissions(activity: AppCompatActivity, callback: (Boolean) -> Unit) =
         permissionManager.requestPermissions(activity, callback)
+    fun isPermissionGranted() = permissionManager.permissionGranted()
 
     fun startLocationUpdates() = locationTrackingStateMachine.getLocationUpdates()
     fun stopLocationUpdates() = locationTrackingStateMachine.removeLocationUpdates()
