@@ -108,7 +108,6 @@ class MainActivity : AppCompatActivity() {
                 getCurrentLocationAndDisplayOnMap()
                 viewModel.readyToTrack()
             } else {
-                Log.e(LOG_TAG_PERMISSIONS, "PERMISSIONS WERE NOT GRANTED SHOW SNACKBAR")
                 showPermissionSnackbar()
             }
         }
