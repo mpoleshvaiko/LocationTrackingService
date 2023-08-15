@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">LocationTracking Service</string>
     <string name="start_button_text">start</string>
-    <string name="pause_button_text">pause</string>
     <string name="finish_button_text">finish</string>
     <string name="location_permission_required_text">Location access is required</string>
     <string name="retry_button_text">retry</string>

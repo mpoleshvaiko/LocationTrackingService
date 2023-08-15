@@ -43,9 +43,6 @@ class LocationTrackingStateMachineImpl(
                     "Foreground Service Running"
                 )
             }
-            States.PAUSE -> {
-                Log.d(LOG_TAG_STATE, "PAUSE")
-            }
             States.DONE -> {
                 Log.d(LOG_TAG_STATE, "DONE")
                 LocationForegroundService.stopService(applicationContext)

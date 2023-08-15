@@ -42,7 +42,5 @@ class MainActivityViewModel(
             LOG_TAG_STATE, "THE APPLICATION IS NOT READY, GRANT PERMISSIONS"
         )
     }
-
-    fun pauseTracking() = locationTrackingStateMachine.transitionTo(States.PAUSE)
     fun stopTracking() = locationTrackingStateMachine.transitionTo(States.DONE)
 }
