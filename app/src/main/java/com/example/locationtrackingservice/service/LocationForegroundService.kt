@@ -6,8 +6,10 @@ import android.content.Intent
 import android.location.Location
 import android.os.Build.*
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.example.locationtrackingservice.LOG_TAG_STATE
 import com.example.locationtrackingservice.MainActivity
 import com.example.locationtrackingservice.R
 import com.example.locationtrackingservice.database.LocationEntity
@@ -27,7 +29,8 @@ class LocationForegroundService : Service() {
     private val scope = CoroutineScope(Dispatchers.Main)
 
     companion object {
-        private const val NOTIFICATION_CHANNEL_ID = "LocationForegroundService"
+        private const val NOTIFICATION_CHANNEL_ID = "1"
+        private const val NOTIFICATION_CHANNEL_NAME = "Service Channel"
         fun startService(context: Context, message: String) {
             val startIntent = Intent(context, LocationForegroundService::class.java)
             startIntent.putExtra("inputExtra", message)
@@ -61,7 +64,7 @@ class LocationForegroundService : Service() {
     private fun createNotificationChannel() {
         if (VERSION.SDK_INT >= VERSION_CODES.O) {
             val serviceChannel = NotificationChannel(
-                NOTIFICATION_CHANNEL_ID, "Foreground Service Channel",
+                NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             val manager = getSystemService(NotificationManager::class.java)
@@ -73,7 +76,7 @@ class LocationForegroundService : Service() {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("Location Tracking Service is running")
+            .setContentTitle(packageName)
             .setContentText(input)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
@@ -82,10 +85,14 @@ class LocationForegroundService : Service() {
 
     private fun observeStateMachine() {
         stateMachine.currentState.observeForever { state ->
-            if (state == States.RUNNING) {
-                observeLocationUpdatesAndSaveToDatabase()
-            } else if (state == States.DONE) {
-                cancel()
+            when (state) {
+                States.RUNNING -> observeLocationUpdatesAndSaveToDatabase()
+                States.DONE -> cancel()
+                else -> {
+                    Log.d(LOG_TAG_STATE, "ERROR")
+                    cancel()
+                    stopService(applicationContext)
+                }
             }
         }
     }

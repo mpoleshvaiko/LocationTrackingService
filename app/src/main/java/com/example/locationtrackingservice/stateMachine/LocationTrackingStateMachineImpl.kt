@@ -40,7 +40,7 @@ class LocationTrackingStateMachineImpl(
                 Log.d(LOG_TAG_STATE, "RUNNING")
                 LocationForegroundService.startService(
                     applicationContext,
-                    "Foreground Service Running"
+                    "RUNNING"
                 )
             }
             States.DONE -> {
