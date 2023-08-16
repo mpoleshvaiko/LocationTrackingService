@@ -8,6 +8,7 @@ val appModule = module {
         managers,
         stateMachine,
         database,
-        repository
+        repository,
+        workManager
     )
 }

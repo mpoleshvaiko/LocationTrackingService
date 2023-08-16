@@ -9,24 +9,26 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.work.*
+import com.example.locationtrackingservice.KEY_LOCATION_DATA
 import com.example.locationtrackingservice.LOG_TAG_STATE
 import com.example.locationtrackingservice.MainActivity
 import com.example.locationtrackingservice.R
-import com.example.locationtrackingservice.database.LocationEntity
-import com.example.locationtrackingservice.repository.LocationRepository
 import com.example.locationtrackingservice.stateMachine.LocationTrackingStateMachine
 import com.example.locationtrackingservice.stateMachine.States
+import com.example.locationtrackingservice.worker.SaveLocationWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
+import java.util.concurrent.TimeUnit
 
 class LocationForegroundService : Service() {
     private val stateMachine: LocationTrackingStateMachine by inject()
-    private val locationRepository: LocationRepository by inject()
     private val scope = CoroutineScope(Dispatchers.Main)
+
 
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "1"
@@ -74,7 +76,12 @@ class LocationForegroundService : Service() {
 
     private fun buildNotification(input: String): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle(packageName)
             .setContentText(input)
@@ -91,6 +98,7 @@ class LocationForegroundService : Service() {
                 else -> {
                     Log.d(LOG_TAG_STATE, "ERROR")
                     cancel()
+                    cancelPeriodicWorkRequest()
                     stopService(applicationContext)
                 }
             }
@@ -99,18 +107,29 @@ class LocationForegroundService : Service() {
 
     private fun observeLocationUpdatesAndSaveToDatabase() {
         stateMachine.getLocationUpdates()
-            .onEach {
-                if (it != null) {
-                    saveLocationToDatabase(it)
+            .onEach { location ->
+                if (location != null) {
+                    saveLocationToDatabase(location)
                 }
             }
             .launchIn(scope)
     }
 
-    private suspend fun saveLocationToDatabase(location: Location) {
-        val locationEntity = LocationEntity(location = "$location")
-        locationRepository.insertLocation(locationEntity)
+    private fun saveLocationToDatabase(location: Location) {
+        val data = workDataOf(KEY_LOCATION_DATA to location.toString())
+        val saveLocationRequest = PeriodicWorkRequestBuilder<SaveLocationWorker>(
+            repeatInterval = 1,
+            repeatIntervalTimeUnit = TimeUnit.MINUTES
+        )
+            .setInputData(data)
+            .build()
+        WorkManager.getInstance(application).enqueue(saveLocationRequest)
     }
 
     private fun cancel() = scope.coroutineContext.cancelChildren()
+
+    private fun cancelPeriodicWorkRequest() {
+        WorkManager.getInstance(applicationContext)
+            .cancelAllWorkByTag(SaveLocationWorker::class.java.simpleName)
+    }
 }
