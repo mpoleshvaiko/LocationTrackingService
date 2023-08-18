@@ -10,9 +10,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.work.*
-import com.example.locationtrackingservice.KEY_LOCATION_DATA
-import com.example.locationtrackingservice.LOG_TAG_STATE
-import com.example.locationtrackingservice.MainActivity
+import com.example.locationtrackingservice.*
 import com.example.locationtrackingservice.R
 import com.example.locationtrackingservice.stateMachine.LocationTrackingStateMachine
 import com.example.locationtrackingservice.stateMachine.States
@@ -116,7 +114,10 @@ class LocationForegroundService : Service() {
     }
 
     private fun saveLocationToDatabase(location: Location) {
-        val data = workDataOf(KEY_LOCATION_DATA to location.toString())
+        val data = workDataOf(
+            KEY_LATITUDE to location.latitude,
+            KEY_LONGITUDE to location.longitude
+        )
         val saveLocationRequest = PeriodicWorkRequestBuilder<SaveLocationWorker>(
             repeatInterval = 1,
             repeatIntervalTimeUnit = TimeUnit.MINUTES

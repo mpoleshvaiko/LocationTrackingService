@@ -7,11 +7,14 @@ import org.koin.dsl.module
 
 val database = module {
     single {
-        Room.databaseBuilder(
-            androidContext(),
-            LocationDatabase::class.java,
-            "location-database"
-        ).build()
+        Room
+            .databaseBuilder(
+                androidContext(),
+                LocationDatabase::class.java,
+                "location-database"
+            )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     single { get<LocationDatabase>().locationDao() }

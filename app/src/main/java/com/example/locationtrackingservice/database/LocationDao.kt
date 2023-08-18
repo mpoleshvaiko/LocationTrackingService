@@ -11,4 +11,7 @@ interface LocationDao {
 
     @Insert
     suspend fun insertAll(vararg locationEntities: LocationEntity)
+
+    @Query("DELETE FROM location")
+    suspend fun removeAllLocations()
 }
