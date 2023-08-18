@@ -7,7 +7,7 @@ import androidx.room.Query
 @Dao
 interface LocationDao {
     @Query("SELECT * FROM location")
-    fun getAll(): List<LocationEntity>
+    suspend fun getAll(): List<LocationEntity>
 
     @Insert
     suspend fun insertAll(vararg locationEntities: LocationEntity)

@@ -2,6 +2,7 @@ package com.example.locationtrackingservice
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -10,9 +11,13 @@ import android.provider.Settings
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
+import com.example.locationtrackingservice.database.LocationEntity
 import com.example.locationtrackingservice.databinding.ActivityMainBinding
 import com.example.locationtrackingservice.managers.map.MapManager
 import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -25,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainActivityViewModel by viewModel()
     private lateinit var mapView: MapView
     private val mapManager: MapManager by inject()
+    private var polyline: Polyline? = null
 
     private val requestAppSettings =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -32,7 +38,7 @@ class MainActivity : AppCompatActivity() {
                 if (viewModel.isPermissionGranted()) {
                     getCurrentLocationAndDisplayOnMap()
                     viewModel.readyToTrack()
-                }else {
+                } else {
                     showPermissionSnackbar()
                 }
             }
@@ -47,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         mapView.onCreate(savedInstanceState)
         requestPermissions()
         mapView.getMapAsync { mapManager.onRestoreMapState(it, mapView) }
+        getLocationsAndDrawPath()
     }
 
     override fun onStart() {
@@ -137,5 +144,30 @@ class MainActivity : AppCompatActivity() {
         val uri = Uri.fromParts("package", packageName, null)
         intent.data = uri
         requestAppSettings.launch(intent)
+    }
+
+    private fun getLocationsAndDrawPath() =
+        viewModel.collectedLocations.observe(this) { locations ->
+            drawPathOnMap(locations)
+        }
+
+    private fun drawPathOnMap(locations: List<LocationEntity>) {
+        mapView.getMapAsync { map ->
+
+            polyline?.remove()
+
+            val pathOptions = PolylineOptions().apply {
+                width(10f)
+                color(Color.BLUE)
+                geodesic(true)
+            }
+
+            for (location in locations) {
+                val latLng = LatLng(location.latitude, location.longitude)
+                pathOptions.add(latLng)
+            }
+
+            polyline = map.addPolyline(pathOptions)
+        }
     }
 }
