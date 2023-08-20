@@ -3,32 +3,17 @@ package com.example.locationtrackingservice.service
 import android.app.*
 import android.content.Context
 import android.content.Intent
-import android.location.Location
 import android.os.Build.*
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.work.*
-import com.example.locationtrackingservice.KEY_LOCATION_DATA
-import com.example.locationtrackingservice.LOG_TAG_STATE
-import com.example.locationtrackingservice.MainActivity
+import com.example.locationtrackingservice.*
 import com.example.locationtrackingservice.R
-import com.example.locationtrackingservice.stateMachine.LocationTrackingStateMachine
-import com.example.locationtrackingservice.stateMachine.States
 import com.example.locationtrackingservice.worker.SaveLocationWorker
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import org.koin.android.ext.android.inject
-import java.util.concurrent.TimeUnit
 
 class LocationForegroundService : Service() {
-    private val stateMachine: LocationTrackingStateMachine by inject()
-    private val scope = CoroutineScope(Dispatchers.Main)
-
 
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "1"
@@ -47,13 +32,18 @@ class LocationForegroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         setupNotification(intent)
-        observeStateMachine()
+        enqueueOneTimeWorkRequest()
 
         return START_STICKY
     }
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancelPeriodicWorkRequest()
     }
 
     private fun setupNotification(intent: Intent?) {
@@ -90,46 +80,15 @@ class LocationForegroundService : Service() {
             .build()
     }
 
-    private fun observeStateMachine() {
-        stateMachine.currentState.observeForever { state ->
-            when (state) {
-                States.RUNNING -> observeLocationUpdatesAndSaveToDatabase()
-                States.DONE -> cancel()
-                else -> {
-                    Log.d(LOG_TAG_STATE, "ERROR")
-                    cancel()
-                    cancelPeriodicWorkRequest()
-                    stopService(applicationContext)
-                }
-            }
-        }
-    }
-
-    private fun observeLocationUpdatesAndSaveToDatabase() {
-        stateMachine.getLocationUpdates()
-            .onEach { location ->
-                if (location != null) {
-                    saveLocationToDatabase(location)
-                }
-            }
-            .launchIn(scope)
-    }
-
-    private fun saveLocationToDatabase(location: Location) {
-        val data = workDataOf(KEY_LOCATION_DATA to location.toString())
-        val saveLocationRequest = PeriodicWorkRequestBuilder<SaveLocationWorker>(
-            repeatInterval = 1,
-            repeatIntervalTimeUnit = TimeUnit.MINUTES
-        )
-            .setInputData(data)
+    private fun enqueueOneTimeWorkRequest() {
+        val saveLocationRequest = OneTimeWorkRequestBuilder<SaveLocationWorker>()
             .build()
-        WorkManager.getInstance(application).enqueue(saveLocationRequest)
-    }
 
-    private fun cancel() = scope.coroutineContext.cancelChildren()
+        WorkManager.getInstance(application).enqueue(saveLocationRequest)
+        Log.d(LOG_TAG_WORKER, "WORK REQUEST: $saveLocationRequest")
+    }
 
     private fun cancelPeriodicWorkRequest() {
-        WorkManager.getInstance(applicationContext)
-            .cancelAllWorkByTag(SaveLocationWorker::class.java.simpleName)
+        WorkManager.getInstance(applicationContext).cancelAllWork()
     }
 }
