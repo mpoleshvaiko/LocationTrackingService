@@ -5,5 +5,5 @@ import org.koin.androidx.workmanager.dsl.worker
 import org.koin.dsl.module
 
 val workManager = module {
-    worker { SaveLocationWorker(get(), get(), get()) }
+    worker { SaveLocationWorker(get(), get(), get(), get()) }
 }

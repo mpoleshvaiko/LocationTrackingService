@@ -4,6 +4,3 @@ const val LOG_TAG_STATE = "STATE"
 const val LOG_TAG_PERMISSIONS = "PERMISSIONS"
 const val LOG_TAG_LOCATION = "LOCATION"
 const val LOG_TAG_WORKER = "WORKER"
-
-const val KEY_LATITUDE = "location"
-const val KEY_LONGITUDE = "longitude"
